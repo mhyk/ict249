@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<!--
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+     KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+-->
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="format-detection" content="telephone=no" />
+<link rel="stylesheet" type="text/css"
+	href="jquery/jquery.mobile-1.3.1.min.css" />
+<script type="text/javascript"
+	src="http://maps.googleapis.com/maps/api/js?libraries=places&sensor=true"></script>
+<script type="text/javascript" src="jquery/jquery-1.8.3.min.js"></script>
+<script type="text/javascript" src="jquery/jquery.mobile-1.3.1.min.js"></script>
+<script type="text/javascript" src="jquery/jquery.mobile.utils.js"></script>
+<script type="text/javascript" src="jquery/ui/jquery.ui.map.js"></script>
+
+<!-- <script type="text/javascript" src="cordova.js"></script>-->
+<script type="text/javascript" src="js/gmap.js"></script>
+
+<title>Phonegap Freebase</title>
+</head>
+<body>
+	<div id="home" data-role="page" data-fullscreen="true" data-theme="b">
+
+		<div data-role="header" data-theme="b">
+			<h1>Phonegap Google Map</h1>
+		</div>
+
+		<div data-role="content" data-fullscreen="true">
+			<div data-role="fieldcontain">
+				<label for="search-basic">Local search:</label><input type="text"
+					name="search" id="query" value="" />
+			</div>
+
+			<div data-role="fieldcontain">
+				<label for="slider"> Search Range(kms): </label> <input type="range"
+					name="range" id="radius" value="5" min="1" max="25" />
+			</div>
+			<div data-role="fieldcontain">
+				<a href="#result-list" data-role="button" data-icon="search"
+					id="search-btn">Search</a>
+			</div>
+
+			<div data-role="fieldcontain">
+				<a href="#result-list" id="fav" data-role="button" data-icon="home">Favorites</a> 
+			</div>
+		</div>
+		<div data-role="footer" data-theme="b"></div>
+	</div>
+	<div id="result-list" data-role="page" data-fullscreen="true"
+		data-theme="b">
+		<div data-role="header" data-theme="b">
+			<a href="#home" data-role="button" data-icon="arrow-l"
+				class="home-btn" data-transition="slide">Back</a>
+			<h1>Result</h1>
+		</div>
+
+		<div data-role="content" data-fullscreen="true">
+			<ul id="resultList" data-role="listview">
+			</ul>
+		</div>
+		<div data-role="footer" data-theme="b" class="ui-grid-b">
+			<a href="#" data-role="button" class="home-btn"
+				data-transition="slide">List</a> <a href="#result-map"
+				data-role="button" class="home-btn" data-transition="slide">Map</a>
+		</div>
+	</div>
+	<div id="result-map" data-role="page" data-fullscreen="true"
+		data-theme="b">
+		<div data-role="header" data-theme="b">
+			<h1>Map</h1>
+		</div>
+
+		<div data-role="content" data-fullscreen="true">
+
+			<div class="ui-bar-c ui-corner-all ui-shadow"
+				style="padding: 1em; margin: 0 auto">
+				<div id="map_canvas" style="margin: 0 auto"></div>
+			</div>
+
+
+		</div>
+		<div data-role="footer" data-theme="b" class="ui-grid-b">
+			<a href="#result-list" data-role="button" class="home-btn"
+				data-transition="slide">List</a> <a href="#" data-role="button"
+				class="home-btn" data-transition="slide">Map</a>
+		</div>
+	</div>
+	<div id="details-page" data-role="page" data-fullscreen="true"
+		data-theme="b">
+		<div data-role="header" data-theme="b">
+			<a href="#result-list" data-role="button" data-icon="arrow-l"
+				class="home-btn" data-transition="slide">Back</a>
+			<h1>Business Details</h1>
+		</div>
+
+		<div data-role="content" data-fullscreen="true">
+			<div id="name"></div>
+			<div id="address"></div>
+			<div id="phone"></div>			
+			<div id="rating"></div>
+
+			
+				<a href="" data-role="button" id="addFave">Add Favorite</a>
+				<a href="" data-role="button" id="removeFave">Remove Favorite</a>
+				<a href="#" data-role="button" id="item-site">Visit HomePage</a>
+			
+
+
+		</div>
+		<div data-role="footer" data-theme="b"></div>
+	</div>
+</body>
+</html>
