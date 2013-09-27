@@ -1,7 +1,5 @@
 $(window).load(function() {
 	
-	var timer;
-	
 	setTreeSize();
 	initDB();
 	
@@ -85,13 +83,11 @@ $(window).load(function() {
 		$("#moreinfo").hide();
 		$("#relationships").show();
 	});
-	
-	$('#searchmember').live('keyup',function(){		
-		timer = setTimeout(search, 2000);
-	});
-	
-	$('#searchmember').live('keydown',function(){
-		clearTimeout(timer);
+		
+	$('#searchmember').live('keypress',function(e){
+		if(e.which == 13) {
+        	search();
+        }
 	});
 	
 	$("#edit-profile-btn").live('click',function(){
