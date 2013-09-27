@@ -20,6 +20,8 @@ $(window).load(function() {
 		$("#moreinfo").hide();
 		$("#relationships").hide();
 		$("#prof-id").val(id);
+		$(".txt-view").hide();
+		$(".form-view").show();
 	});
 	
 	$("#add-relationship").live("click",function(){
@@ -33,7 +35,7 @@ $(window).load(function() {
 	
 	$("#save-profile-btn").live("click",function(){
 		var member = new Object();
-		member.name= $("#name").val();
+		member.name= $("#fname").val();
 		member.nick = $("#nick").val();
 		member.owner = 1;
 		member.related_id = $("#related-id").val();
@@ -43,7 +45,7 @@ $(window).load(function() {
 	
 	$("#save-family-btn").live("click",function(){
 		var member = new Object();
-		member.name= $("#name").val();
+		member.name= $("#fname").val();
 		member.nick = $("#nick").val();
 		member.relationship = $("#relationship").val();
 		member.owner = 0;
@@ -53,9 +55,9 @@ $(window).load(function() {
 	//TAB BUTTONS
 	
 	$("#gallery-tab").live("click",function(){
-		$("#gallery-tab").addClass("ui-btn-active");
-		$("#moreinfo-tab").removeClass("ui-btn-active");
-		$("#relationships-tab").removeClass("ui-btn-active");
+		$("#gallery-tab").addClass("ui-btn-active ui-state-persist");
+		$("#moreinfo-tab").removeClass("ui-btn-active ui-state-persist");
+		$("#relationships-tab").removeClass("ui-btn-active ui-state-persist");
 		
 		$("#gallery").show();
 		$("#moreinfo").hide();
@@ -64,9 +66,9 @@ $(window).load(function() {
 	});
 	
 	$("#moreinfo-tab").live("click",function(){
-		$("#moreinfo-tab").addClass("ui-btn-active");
-		$("#gallery-tab").removeClass("ui-btn-active");
-		$("#relationships-tab").removeClass("ui-btn-active");
+		$("#moreinfo-tab").addClass("ui-btn-active ui-state-persist");
+		$("#gallery-tab").removeClass("ui-btn-active ui-state-persist");
+		$("#relationships-tab").removeClass("ui-btn-active ui-state-persist");
 		
 		$("#gallery").hide();
 		$("#moreinfo").show();
@@ -75,9 +77,9 @@ $(window).load(function() {
 	});
 	
 	$("#relationships-tab").live("click",function(){
-		$("#relationships-tab").addClass("ui-btn-active");
-		$("#moreinfo-tab").removeClass("ui-btn-active");
-		$("#relationships-tab").removeClass("ui-btn-active");
+		$("#relationships-tab").addClass("ui-btn-active ui-state-persist");
+		$("#moreinfo-tab").removeClass("ui-btn-active ui-state-persist");
+		$("#relationships-tab").removeClass("ui-btn-active ui-state-persist");
 		
 		$("#gallery").hide();
 		$("#moreinfo").hide();
@@ -91,7 +93,25 @@ $(window).load(function() {
 	$('#searchmember').live('keydown',function(){
 		clearTimeout(timer);
 	});
+	
+	$("#edit-profile-btn").live('click',function(){
+		$(".txt-view").hide();
+		$(".form-view").show();
+	});
 
+	$("#update-profile-btn").live("click",function(){
+		var member = new Object();
+		member.id = $("#prof-id").val();
+		member.name= $("#profNameTxt").val();
+		member.nick = $("#profNickTxt").val();
+		member.phone = $("#profPhoneTxt").val();
+		member.email = $("#profEmailTxt").val();
+		member.bday = $("#profBdayTxt").val();
+		updateMember(member);
+		$(".txt-view").show();
+		$(".form-view").hide();
+		
+	});	
 });
 
 function setTreeSize() {

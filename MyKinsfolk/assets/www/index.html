@@ -37,8 +37,12 @@
 	text-align: center;
 }
 
-.ui-content{
-	padding:0px!important;
+.ui-content {
+	padding: 0px !important;
+}
+
+.form-view {
+	display: none;
 }
 </style>
 
@@ -62,43 +66,90 @@
 		data-theme="a">
 		<div data-role="header">
 			<a href="#home" data-role="button" data-icon="home" class="home-btn"
-				data-transition="slide"></a>
+				data-transition="slide">&nbsp;&nbsp;</a>
 			<h1 id="prof-name" class="hdr">Profile</h1>
 		</div>
 		<div data-role="content" data-fullscreen="true">
-			<div id="prof-info" style="display:block">
+			<div id="prof-info" style="display: block">
 				<table border=0>
 					<tr>
-					<td><span id="prof-pic"><img src="img/pic.jpg" width=100 height=100></span></td>
-					<!-- <td valign="top"><span id="prof-name"></span></td>-->
-					</tr>					
+						<td><span id="prof-pic"><img src="img/pic.jpg"
+								width=100 height=100></span></td>
+						<!-- <td valign="top"><span id="prof-name"></span></td>-->
+					</tr>
 				</table>
-				<input type="hidden" id="prof-id" value="" />
+				<input type="hidden" id="prof-id" value="" /> <input type="hidden"
+					id="activeTab" value="" />
 			</div>
 			<div data-role="navbar" data-iconpos="bottom">
 				<ul>
-					<li><a href="#moreinfo" id="moreinfo-tab" data-icon="info" class="ui-btn-active">More
-							Information</a></li>
-					<li><a href="#gallery" id="gallery-tab" 
-						data-icon="grid">Gallery</a></li>		
+					<li><a href="#moreinfo" id="moreinfo-tab" data-icon="info"
+						class="ui-btn-active ui-state-persist">Summary</a></li>
+					<li><a href="#gallery" id="gallery-tab" data-icon="grid">Gallery</a></li>
 					<li><a href="#relationships" id="relationships-tab">Relationship</a></li>
 				</ul>
 			</div>
 
 			<div id="gallery"></div>
 
-			<div id="moreinfo" style="margin-top:10px">
-				<table border=0>
-					<tr>
-						<td>Name:</td>
-						<td><h2 id="profName"></h3></td>
-					</tr>
-					<tr>
-						<td>Nick:</td>
-						<td><h2 id="profNick"></h3></td>
-					</tr>
-				</table>
-				
+			<div id="moreinfo" style="margin-top: 10px">
+				<div class="txt-view">
+					<table border=0>
+						<tr>
+							<td><h3>Name:</h3></td>
+							<td>
+								<h3 id="profName"></h3>
+							</td>
+						</tr>
+						<tr>
+							<td><h3>Nick:</h3></td>
+							<td>
+								<h3 id="profNick"></h3>
+							</td>
+						</tr>
+						<tr>
+							<td><h3>Birthday:</h3></td>
+							<td><h3 id="profBday"></h3></td>
+						</tr>
+						<tr>
+							<td><h3>Phone:</h3></td>
+							<td><h3 id="profPhone"></h3></td>
+						</tr>
+						<tr>
+							<td><h3>Email:</h3></td>
+							<td><h3 id="profEmail"></h3></td>
+						</tr>
+					</table>
+					<a href="#" data-role="button" id="edit-profile-btn"
+						data-icon="edit">Edit Profile</a>
+				</div>
+				<div class="form-view">
+					<div data-role="fieldcontain">
+						<label for="profNameTxt">Name:</label> <input type="text" name="profNameTxt"
+							id="profNameTxt" value="" />
+					</div>
+					<div data-role="fieldcontain">
+						<label for="profNickTxt">Nick:</label> <input type="text" name="profNickTxt"
+							id="profNickTxt" value="" />
+					</div>
+					<div data-role="fieldcontain">
+						<label for="profBdayTxt">Birthday:</label> <input type="date" name="profBdayTxt"
+							id="profBdayTxt" value="" />
+					</div>
+					<div data-role="fieldcontain">
+						<label for="profPhoneTxt">Phone:</label> <input type="text" name="profPhoneTxt"
+							id="profPhoneTxt" value="" />
+					</div>
+					<div data-role="fieldcontain">
+						<label for="profEmailTxt">Email:</label> <input type="text" name="profEmailTxt"
+							id="profEmailTxt" value="" />
+					</div>
+					
+
+					<a href="#" data-role="button" id="update-profile-btn">Save</a>
+				</div>
+
+
 			</div>
 
 			<div id="relationships">
@@ -141,7 +192,7 @@
 		data-theme="a">
 		<div data-role="header">
 			<a href="#home" data-role="button" data-icon="home" class="home-btn"
-				data-transition="slide"></a>
+				data-transition="slide">&nbsp;&nbsp;</a>
 			<h1 class="hdr">Member Profile</h1>
 		</div>
 		<div data-role="content" data-fullscreen="true">
@@ -149,10 +200,6 @@
 			<div data-role="fieldcontain">
 				<label for="fname">Name:</label> <input type="text" name="fname"
 					id="fname" value="" />
-			</div>
-			<div data-role="fieldcontain">
-				<label for="lname">Last Name:</label> <input type="text"
-					name="lname" id="lname" value="" />
 			</div>
 			<div data-role="fieldcontain">
 				<label for="nick">Nick:</label> <input type="text" name="nick"
@@ -189,7 +236,7 @@
 		data-theme="a">
 		<div data-role="header">
 			<a href="#home" data-role="button" data-icon="home" class="home-btn"
-				data-transition="slide"></a>
+				data-transition="slide">&nbsp;&nbsp;</a>
 			<h1 class="hdr">Members</h1>
 		</div>
 		<div data-role="content" data-fullscreen="true">

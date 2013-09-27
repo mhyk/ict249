@@ -2,19 +2,18 @@
 
 function ensureMemberTableExists(tx) {
 	tx
-			.executeSql("CREATE TABLE IF NOT EXISTS Member (member_id integer primary key autoincrement,name varchar(100),nick varchar(20),owner integer);");
+			.executeSql("CREATE TABLE IF NOT EXISTS Member (member_id integer primary key autoincrement,name varchar(100),nick varchar(20),birthday date, phone varchar(15),email varchar(50),owner integer);");
 }
 
 function ensureNodeTableExists(tx) {
 	tx
-			.executeSql("CREATE TABLE IF NOT EXISTS Node(node_id integer primary key autoincrement,member_id int,parent_id int,gender int);");
+			.executeSql("CREATE TABLE IF NOT EXISTS Node(node_id integer primary key autoincrement,member_id int,father_node_id int,mother_node_id int,gender int);");
 }
 
 function ensureMarriageTableExists(tx) {
 	tx
 			.executeSql("CREATE TABLE IF NOT EXISTS Marriage(husband_id,wife_id, primary key(husband_id,wife_id);");
 }
-
 
 function initDB() {
 	var db = window.openDatabase("Kinsfolk", "1.0", "Kinsfolk", 200000);
@@ -76,19 +75,32 @@ function checkSelf() {
 										var result = (results != null
 												&& results.rows != null && results.rows.length > 0);
 										if (result) {
-											var entry = results.rows
-													.item(0);
+											var entry = results.rows.item(0);
 											var dName = entry.name;
 											if (entry.nick != "")
 												dName = entry.nick;
-//											$("#prof-name").html(
-//													"<h3>" + dName
-//															+ "</h3>");
-											
+											//											$("#prof-name").html(
+											//													"<h3>" + dName
+											//															+ "</h3>");
+
 											$("#prof-name").html(dName);
-											
+											$("#profName").html(entry.name);
+											$("#profNick").html(entry.nick);
+											$("#profBday").html(entry.birthday);
+											$("#profPhone").html(entry.phone);
+											$("#profEmail").html(entry.email);
+
+											$("#prof-id").val(entry.member_id);
+											$("#profNameTxt").val(entry.name);
+											$("#profNickTxt").val(entry.nick);
+											$("#profBdayTxt").val(
+													entry.birthday);
+											$("#profPhoneTxt").val(entry.phone);
+											$("#profEmailTxt").val(entry.email);
+
 											$("#gallery").hide();
 											$("#moreinfo").show();
+											$("#activeTab").val(1);
 											$("#relationships").hide();
 											location.href = "#profile";
 
@@ -112,48 +124,38 @@ function checkSelf() {
 
 function insertNewMember(data) {
 	var db = window.openDatabase("Kinsfolk", "1.0", "Kinsfolk", 200000);
-	db
-			.transaction(
-					function(tx) {
-						ensureMemberTableExists(tx);
-						var insertStmt = "INSERT INTO Member (name,nick,owner) VALUES ('"
-								+ data.name
-								+ "','"								
-								+ data.nick + "'," + data.owner + ")";
-						// console.log(insertStmt);
-						tx.executeSql(insertStmt, [], function(tx, results) {
-							getProfile(results.insertId);
-						});
+	db.transaction(function(tx) {
+		ensureMemberTableExists(tx);
+		var insertStmt = "INSERT INTO Member (name,nick,owner) VALUES ('"
+				+ data.name + "','" + data.nick + "'," + data.owner + ")";
+		// console.log(insertStmt);
+		tx.executeSql(insertStmt, [], function(tx, results) {
+			getProfile(results.insertId);
+		});
 
-					}, function(error) {
-						console.log("Data insert failed " + error.code + " "
-								+ error.message);
-					}, function() {
-						console.log("Data insert successful");
-					});
+	}, function(error) {
+		console.log("Data insert failed " + error.code + " " + error.message);
+	}, function() {
+		console.log("Data insert successful");
+	});
 }
 
-function insertToNode(data){
+function insertToNode(data) {
 	var db = window.openDatabase("Kinsfolk", "1.0", "Kinsfolk", 200000);
-	db
-			.transaction(
-					function(tx) {
-						ensureMemberTableExists(tx);
-						var insertStmt = "INSERT INTO Member (name,nick,owner) VALUES ('"
-								+ name
-								+ "','"
-								+ data.nick + "'," + data.owner + ")";
-						// console.log(insertStmt);
-						tx.executeSql(insertStmt, [], function(tx, results) {
-							getProfile(results.insertId);
-						});
+	db.transaction(function(tx) {
+		ensureMemberTableExists(tx);
+		var insertStmt = "INSERT INTO Member (name,nick,owner) VALUES ('"
+				+ name + "','" + data.nick + "'," + data.owner + ")";
+		// console.log(insertStmt);
+		tx.executeSql(insertStmt, [], function(tx, results) {
+			getProfile(results.insertId);
+		});
 
-					}, function(error) {
-						console.log("Data insert failed " + error.code + " "
-								+ error.message);
-					}, function() {
-						console.log("Data insert successful");
-					});
+	}, function(error) {
+		console.log("Data insert failed " + error.code + " " + error.message);
+	}, function() {
+		console.log("Data insert successful");
+	});
 }
 
 function getAllMembers() {
@@ -222,6 +224,17 @@ function getProfile(memid) {
 							dName = entry.nick;
 						//$("#prof-name").html("<h3>" + dName + "</h3>");
 						$("#prof-name").html(dName);
+						$("#profName").html(entry.name);
+						$("#profNick").html(entry.nick);
+						$("#profBday").html(entry.birthday);
+						$("#profPhone").html(entry.phone);
+						$("#profEmail").html(entry.email);
+						$("#prof-id").val(entry.member_id);
+						$("#profNameTxt").val(entry.name);
+						$("#profNickTxt").val(entry.nick);
+						$("#profBdayTxt").val(entry.birthday);
+						$("#profPhoneTxt").val(entry.phone);
+						$("#profEmailTxt").val(entry.email);
 					}
 
 				} else {
@@ -245,7 +258,8 @@ function searchMembers(txt) {
 		db
 				.transaction(function(tx) {
 					ensureMemberTableExists(tx);
-					var query = "SELECT * FROM Member where name like '%"+txt+"%' or nick like '%"+txt+"%'";
+					var query = "SELECT * FROM Member where name like '%" + txt
+							+ "%' or nick like '%" + txt + "%'";
 					tx
 							.executeSql(
 									query,
@@ -286,4 +300,24 @@ function searchMembers(txt) {
 	} catch (err) {
 		console.log("Got error while reading Members " + err);
 	}
+}
+
+function updateMember(data) {
+	var db = window.openDatabase("Kinsfolk", "1.0", "Kinsfolk", 200000);
+	db.transaction(function(tx) {
+		ensureMemberTableExists(tx);
+		var insertStmt = "update Member set name='" + data.name + "',nick='"
+				+ data.nick + "',birthday='" + data.bday + "',phone='"
+				+ data.phone + "',email='" + data.email + "' where member_id="
+				+ data.id;
+		console.log(insertStmt);
+		tx.executeSql(insertStmt, [], function(tx, results) {
+			getProfile(data.id);					
+		});
+
+	}, function(error) {
+		console.log("Data update failed " + error.code + " " + error.message);
+	}, function() {
+		console.log("Data update successful");
+	});
 }
