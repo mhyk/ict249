@@ -64,20 +64,20 @@
 		<div data-role="content" data-fullscreen="true">
 			<div data-role="navbar" data-iconpos="bottom">
 				<ul>
-					<li><a href="#summary" id="summary-tab" class="ui-btn-active"
-						data-icon="grid">Summary</a></li>
-					<li><a href="#moreinfo" id="moreinfo-tab" data-icon="info">More
+					<li><a href="#moreinfo" id="moreinfo-tab" data-icon="info" class="ui-btn-active">More
 							Information</a></li>
+					<li><a href="#gallery" id="gallery-tab" 
+						data-icon="grid">Gallery</a></li>		
 					<li><a href="#relationships" id="relationships-tab">Relationship</a></li>
 				</ul>
 			</div>
 
-			<div id="summary">
+			<div id="gallery"></div>
+
+			<div id="moreinfo">
 				<div id="prof-name"></div>
 				<input type="hidden" id="prof-id" value="" />
 			</div>
-
-			<div id="moreinfo">More Information</div>
 
 			<div id="relationships">
 				<a href="#relationship-form" data-role="button"
@@ -98,10 +98,6 @@
 			<div data-role="fieldcontain">
 				<label for="fname">Name:</label> <input type="text" name="fname"
 					id="fname" value="" />
-			</div>
-			<div data-role="fieldcontain">
-				<label for="lname">Last Name:</label> <input type="text"
-					name="lname" id="lname" value="" />
 			</div>
 			<div data-role="fieldcontain">
 				<label for="nick">Nick:</label> <input type="text" name="nick"
@@ -141,8 +137,8 @@
 					id="nick" value="" />
 			</div>
 			<div data-role="fieldcontain">
-				<label for="relationship" class="select">Relationship</label>
-				<select name="relationship" id="relationship">
+				<label for="relationship" class="select">Relationship</label> <select
+					name="relationship" id="relationship">
 					<option value="1">Father</option>
 					<option value="2">Mother</option>
 					<option value="3">Brother</option>
@@ -166,11 +162,11 @@
 		</div>
 
 	</div>
-	
+
 	<div id="members" data-role="page" data-fullscreen="true"
 		data-theme="a">
 		<div data-role="header">
-		<a href="#home" data-role="button" data-icon="home" class="home-btn"
+			<a href="#home" data-role="button" data-icon="home" class="home-btn"
 				data-transition="slide"></a>
 			<h1 class="hdr">Members</h1>
 		</div>

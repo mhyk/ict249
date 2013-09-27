@@ -1,9 +1,16 @@
 $(window).load(function() {
+	
+	var timer;
+	
 	setTreeSize();
 	initDB();
 	
 	$("#self-btn").live("click",function(){
 		checkSelf();
+	});
+	
+	$(".home-btn").live("click",function(){
+		initDB();
 	});
 	
 	$(".details").live("click",function(){
@@ -26,8 +33,7 @@ $(window).load(function() {
 	
 	$("#save-profile-btn").live("click",function(){
 		var member = new Object();
-		member.fname= $("#fname").val();
-		member.lname = $("#lname").val();
+		member.name= $("#fname").val();
 		member.nick = $("#nick").val();
 		member.owner = 1;
 		member.related_id = $("#related-id").val();
@@ -37,8 +43,7 @@ $(window).load(function() {
 	
 	$("#save-family-btn").live("click",function(){
 		var member = new Object();
-		member.fname= $("#fname").val();
-		member.lname = $("#lname").val();
+		member.name= $("#name").val();
 		member.nick = $("#nick").val();
 		member.relationship = $("#relationship").val();
 		member.owner = 0;
@@ -47,12 +52,12 @@ $(window).load(function() {
 	
 	//TAB BUTTONS
 	
-	$("#summary-tab").live("click",function(){
-		$("#summary-tab").addClass("ui-btn-active");
+	$("#gallery-tab").live("click",function(){
+		$("#gallery-tab").addClass("ui-btn-active");
 		$("#moreinfo-tab").removeClass("ui-btn-active");
 		$("#relationships-tab").removeClass("ui-btn-active");
 		
-		$("#summary").show();
+		$("#gallery").show();
 		$("#moreinfo").hide();
 		$("#relationships").hide();
 		
@@ -60,10 +65,10 @@ $(window).load(function() {
 	
 	$("#moreinfo-tab").live("click",function(){
 		$("#moreinfo-tab").addClass("ui-btn-active");
-		$("#summary-tab").removeClass("ui-btn-active");
+		$("#gallery-tab").removeClass("ui-btn-active");
 		$("#relationships-tab").removeClass("ui-btn-active");
 		
-		$("#summary").hide();
+		$("#gallery").hide();
 		$("#moreinfo").show();
 		$("#relationships").hide();
 		
@@ -74,9 +79,17 @@ $(window).load(function() {
 		$("#moreinfo-tab").removeClass("ui-btn-active");
 		$("#relationships-tab").removeClass("ui-btn-active");
 		
-		$("#summary").hide();
+		$("#gallery").hide();
 		$("#moreinfo").hide();
 		$("#relationships").show();
+	});
+	
+	$('#searchmember').live('keyup',function(){		
+		timer = setTimeout(search, 2000);
+	});
+	
+	$('#searchmember').live('keydown',function(){
+		clearTimeout(timer);
 	});
 
 });
@@ -86,4 +99,9 @@ function setTreeSize() {
 	var height = window.innerHeight - 50;
 	$(".basicdiagram").width(width);
 	$(".basicdiagram").height(height);
+}
+
+function search(){
+	var txt = $('#searchmember').val();
+	searchMembers(txt);
 }
