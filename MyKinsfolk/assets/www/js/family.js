@@ -33,7 +33,7 @@ $(window).load(function() {
 	
 	$("#save-profile-btn").live("click",function(){
 		var member = new Object();
-		member.name= $("#fname").val();
+		member.name= $("#name").val();
 		member.nick = $("#nick").val();
 		member.owner = 1;
 		member.related_id = $("#related-id").val();

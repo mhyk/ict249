@@ -36,6 +36,10 @@
 .hdr {
 	text-align: center;
 }
+
+.ui-content{
+	padding:0px!important;
+}
 </style>
 
 <script type="text/javascript"></script>
@@ -59,9 +63,18 @@
 		<div data-role="header">
 			<a href="#home" data-role="button" data-icon="home" class="home-btn"
 				data-transition="slide"></a>
-			<h1 class="hdr">Profile</h1>
+			<h1 id="prof-name" class="hdr">Profile</h1>
 		</div>
 		<div data-role="content" data-fullscreen="true">
+			<div id="prof-info" style="display:block">
+				<table border=0>
+					<tr>
+					<td><span id="prof-pic"><img src="img/pic.jpg" width=100 height=100></span></td>
+					<!-- <td valign="top"><span id="prof-name"></span></td>-->
+					</tr>					
+				</table>
+				<input type="hidden" id="prof-id" value="" />
+			</div>
 			<div data-role="navbar" data-iconpos="bottom">
 				<ul>
 					<li><a href="#moreinfo" id="moreinfo-tab" data-icon="info" class="ui-btn-active">More
@@ -74,9 +87,18 @@
 
 			<div id="gallery"></div>
 
-			<div id="moreinfo">
-				<div id="prof-name"></div>
-				<input type="hidden" id="prof-id" value="" />
+			<div id="moreinfo" style="margin-top:10px">
+				<table border=0>
+					<tr>
+						<td>Name:</td>
+						<td><h2 id="profName"></h3></td>
+					</tr>
+					<tr>
+						<td>Nick:</td>
+						<td><h2 id="profNick"></h3></td>
+					</tr>
+				</table>
+				
 			</div>
 
 			<div id="relationships">

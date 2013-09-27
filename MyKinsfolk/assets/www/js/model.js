@@ -81,9 +81,12 @@ function checkSelf() {
 											var dName = entry.name;
 											if (entry.nick != "")
 												dName = entry.nick;
-											$("#prof-name").html(
-													"<h1>" + entry.name
-															+ "</h1>");
+//											$("#prof-name").html(
+//													"<h3>" + dName
+//															+ "</h3>");
+											
+											$("#prof-name").html(dName);
+											
 											$("#gallery").hide();
 											$("#moreinfo").show();
 											$("#relationships").hide();
@@ -217,7 +220,8 @@ function getProfile(memid) {
 						var dName = entry.name;
 						if (entry.nick != "")
 							dName = entry.nick;
-						$("#prof-name").html("<h1>" + entry.name + "</h1>");
+						//$("#prof-name").html("<h3>" + dName + "</h3>");
+						$("#prof-name").html(dName);
 					}
 
 				} else {
