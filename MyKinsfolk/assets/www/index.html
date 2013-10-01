@@ -44,6 +44,21 @@
 .form-view {
 	display: none;
 }
+.bp-description{
+	display:none !important;
+}
+
+.bp-title{
+	text-align:center !important;
+}
+.bp-photo-frame{
+	left: 23px !important;
+	width: 65px!important;
+	
+}
+.bp-photo-frame img{
+	width: 65px!important;
+}
 </style>
 
 <script type="text/javascript"></script>
@@ -246,7 +261,12 @@
 	</div>
 	<div id="tree" data-role="page" data-fullscreen="true" data-theme="a">
 		<div data-role="content" data-fullscreen="true">
-			<div class="basicdiagram" style="margin: 0 auto;"></div>
+			 <div class="basicdiagram" style="margin: 0 auto;"></div>
+			 <div id="tree-content" style="display:none">
+			 	<ul class="tree-root">
+			 	</ul>
+			 	
+			 </div>
 		</div>
 	</div>
 </body>
