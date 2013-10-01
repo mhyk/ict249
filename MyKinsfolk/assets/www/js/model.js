@@ -11,8 +11,7 @@ function ensureNodeTableExists(tx) {
 }
 
 function ensureRootTableExists(tx) {
-	tx
-			.executeSql("CREATE TABLE IF NOT EXISTS Root(member_id);");
+	tx.executeSql("CREATE TABLE IF NOT EXISTS Root(member_id);");
 }
 
 function initDB() {
@@ -79,9 +78,9 @@ function checkSelf() {
 											var dName = entry.name;
 											if (entry.nick != "")
 												dName = entry.nick;
-											//											$("#prof-name").html(
-											//													"<h3>" + dName
-											//															+ "</h3>");
+											// $("#prof-name").html(
+											// "<h3>" + dName
+											// + "</h3>");
 
 											$("#prof-name").html(dName);
 											$("#profName").html(entry.name);
@@ -129,9 +128,9 @@ function insertNewMember(data) {
 		var insertStmt = "INSERT INTO Member (name,nick,owner) VALUES ('"
 				+ data.name + "','" + data.nick + "'," + data.owner + ")";
 		tx.executeSql(insertStmt, [], function(tx, results) {
-			if(owner = 1)
+			if (owner = 1)
 				initRoot(results.insertId);
-			getProfile(results.insertId);			
+			getProfile(results.insertId);
 		});
 
 	}, function(error) {
@@ -223,7 +222,7 @@ function getProfile(memid) {
 						var dName = entry.name;
 						if (entry.nick != "")
 							dName = entry.nick;
-						//$("#prof-name").html("<h3>" + dName + "</h3>");
+						// $("#prof-name").html("<h3>" + dName + "</h3>");
 						$("#prof-name").html(dName);
 						$("#profName").html(entry.name);
 						$("#profNick").html(entry.nick);
@@ -313,7 +312,7 @@ function updateMember(data) {
 				+ data.id;
 		console.log(insertStmt);
 		tx.executeSql(insertStmt, [], function(tx, results) {
-			getProfile(data.id);					
+			getProfile(data.id);
 		});
 
 	}, function(error) {
@@ -323,13 +322,13 @@ function updateMember(data) {
 	});
 }
 
-function initRoot(id){		
+function initRoot(id) {
 	var db = window.openDatabase("Kinsfolk", "1.0", "Kinsfolk", 200000);
 	db.transaction(function(tx) {
 		ensureRootTableExists(tx);
-		var insertStmt = "insert into Root(member_id) values("+id+")";
-		//console.log(insertStmt);
-		tx.executeSql(insertStmt, [], function(tx, results) {							
+		var insertStmt = "insert into Root(member_id) values(" + id + ")";
+		// console.log(insertStmt);
+		tx.executeSql(insertStmt, [], function(tx, results) {
 		});
 
 	}, function(error) {
@@ -343,10 +342,10 @@ function updateRoot(id) {
 	var db = window.openDatabase("Kinsfolk", "1.0", "Kinsfolk", 200000);
 	db.transaction(function(tx) {
 		ensureRootTableExists(tx);
-		var insertStmt = "update Root set member_id="+id;
+		var insertStmt = "update Root set member_id=" + id;
 		console.log(insertStmt);
 		tx.executeSql(insertStmt, [], function(tx, results) {
-							
+
 		});
 
 	}, function(error) {
@@ -356,93 +355,209 @@ function updateRoot(id) {
 	});
 }
 
-function getTree(){
+function getTree() {
 	console.log("Getting Tree Nodes");
-	var db = window.openDatabase("Kinsfolk", "1.0", "Kinsfolk", 200000);	
+	var db = window.openDatabase("Kinsfolk", "1.0", "Kinsfolk", 200000);
 	try {
 		db
 				.transaction(function(tx) {
 					ensureRootTableExists(tx);
 					var query = "SELECT * FROM Member m join Root r on m.member_id=r.member_id";
-					tx
-							.executeSql(
-									query,
-									[],
-									function(tx, results) {
-										var member = new Object();
-										if (results != null
-												&& results.rows != null) {
-											
-												var entry = results.rows
-														.item(0);
-												html='<li>{"id":"'+entry.member_id+'","node_id":"'+entry.member_id+'","name":"'+entry.name+'","parent":"0","type":"root"}</li>';
-												$(".tree-root").append(html);
-												getSpouse(entry.member_id);
-												getChildren(entry.member_id);
-										} 								
-									},
-									function(error) {
-										console
-												.log("Got error fetching Members "
-														+ error.code
-														+ " "
-														+ error.message);
-									});
+					tx.executeSql(query, [], function(tx, results) {
+						var member = new Object();
+						if (results != null && results.rows != null) {
+
+							var entry = results.rows.item(0);
+							html = '<li>{"id":"' + entry.member_id
+									+ '","node_id":"' + entry.member_id
+									+ '","name":"' + entry.name
+									+ '","parent":"0","type":"root"}</li>';
+							$(".tree-root").append(html);
+							getSpouse(entry.member_id, 1);
+							getChildren(entry.member_id, 1);
+						}
+					}, function(error) {
+						console.log("Got error fetching Members " + error.code
+								+ " " + error.message);
+					});
 				});
 	} catch (err) {
 		console.log("Got error while reading Members " + err);
-	}	
+	}
 }
 
-//function getNode(id,callback){
-//	var db = window.openDatabase("Kinsfolk", "1.0", "Kinsfolk", 200000);	
-//	try {
-//		db
-//				.transaction(function(tx) {
-//					ensureNodeTableExists(tx);
-//					var query = "select node_id,m.member_id,m.name,m.nick from node n join member m on n.member_id=m.member_id where m.member_id="+id;
-//					tx
-//							.executeSql(
-//									query,
-//									[],
-//									function(tx, results) {
-//										var member = new Object();
-//										if (results != null
-//												&& results.rows != null) {
-//											
-//												var entry = results.rows
-//														.item(0);
-//												
-//												member.name = entry.name;
-//												member.member_id = entry.member_id;
-//												
-//											
-//										} else {
-//											member.name = "";
-//											member.member_id = 0;
-//										}
-//										callBack(member);									
-//									},
-//									function(error) {
-//										console
-//												.log("Got error fetching Members "
-//														+ error.code
-//														+ " "
-//														+ error.message);
-//									});
-//				});
-//	} catch (err) {
-//		console.log("Got error while reading Members " + err);
-//	}
-//}
+function getSpouse(id, view) {
+	getGender(
+			id,
+			function(sex) {
+				var db = window.openDatabase("Kinsfolk", "1.0", "Kinsfolk",
+						200000);
+				try {
+					db
+							.transaction(function(tx) {
+								ensureRootTableExists(tx);
+								if (sex == 1)
+									var query = "select * from member where member_id=(select mother_node_id from node where father_node_id="
+											+ id + ")";
+								else
+									var query = "select * from member where member_id=(select father_node_id from node where mother_node_id="
+											+ id + ")";
+								tx
+										.executeSql(
+												query,
+												[],
+												function(tx, results) {
+													if (results != null
+															&& results.rows != null) {
+														if (results.rows.length > 0) {
+															var entry = results.rows
+																	.item(0);
+															var dName = entry.name;
+															if (entry.nick != "")
+																dName = entry.nick;
+															if (view == 1) {
+																html = '<li>{"id":"'
+																		+ entry.member_id
+																		+ '","node_id":"'
+																		+ entry.member_id
+																		+ '","name":"'
+																		+ dName
+																		+ '","parent":"'
+																		+ id
+																		+ '","type":"spouse"}</li>';
+																$(".tree-root")
+																		.append(
+																				html);
+															} else {
+																if (sex == 1)
+																	relationship = "Wife";
+																else
+																	relationship = "Husband";
+																$('#familyList')
+																		.append(
+																				'<li><a href="#profile" class="details" id="'
+																						+ entry.member_id
+																						+ '"><!--<img src="" class="ul-li-icon" />--> <h3>&nbsp;'
+																						+ dName
+																						+ '</h3><p>'
+																						+ relationship
+																						+ '</p></a>');
+																$('#familyList')
+																		.listview(
+																				'refresh');
+															}
 
-function getSpouse(id){
-	var db = window.openDatabase("Kinsfolk", "1.0", "Kinsfolk", 200000);	
+														}
+
+													}
+												},
+												function(error) {
+													console
+															.log("Got error fetching Members "
+																	+ error.code
+																	+ " "
+																	+ error.message);
+												});
+							});
+				} catch (err) {
+					console.log("Got error while reading Members " + err);
+				}
+			});
+}
+
+function getChildren(id, view) {
+	getGender(
+			id,
+			function(sex) {
+				var db = window.openDatabase("Kinsfolk", "1.0", "Kinsfolk",
+						200000);
+				try {
+					db
+							.transaction(function(tx) {
+								if(sex == 1)
+									var query = "SELECT * FROM Member m join Node n on m.member_id=n.member_id where n.father_node_id="
+										+ id;
+								else
+									var query = "SELECT * FROM Member m join Node n on m.member_id=n.member_id where n.mother_node_id="
+										+ id;
+								tx
+										.executeSql(
+												query,
+												[],
+												function(tx, results) {
+													if (results != null
+															&& results.rows != null) {
+														for ( var index = 0; index < results.rows.length; index++) {
+															var entry = results.rows
+																	.item(index);
+															var dName = entry.name;
+															if (entry.nick != "")
+																dName = entry.nick;
+															if (view == 1) {
+																html = '<li>{"id":"'
+																		+ entry.member_id
+																		+ '","node_id":"'
+																		+ entry.member_id
+																		+ '","name":"'
+																		+ dName
+																		+ '","parent":"'
+																		+ id
+																		+ '","type":"node"}</li>';
+																$(".tree-root")
+																		.append(
+																				html);
+																getSpouse(entry.member_id);
+																getChildren(entry.member_id);
+															} else {
+																if (entry.gender == 1)
+																	relationship = "Son";
+																else
+																	relationship = "Daughter";
+																$('#familyList')
+																		.append(
+																				'<li><a href="#profile" class="details" id="'
+																						+ entry.member_id
+																						+ '"><!--<img src="" class="ul-li-icon" />--> <h3>&nbsp;'
+																						+ dName
+																						+ '</h3><p>'
+																						+ relationship
+																						+ '</p></a>');
+															}
+
+														}
+														if (view == 2) {
+															$('#familyList')
+																	.listview(
+																			'refresh');
+														}
+
+													}
+												},
+												function(error) {
+													console
+															.log("Got error fetching Members "
+																	+ error.code
+																	+ " "
+																	+ error.message);
+												});
+							});
+				} catch (err) {
+					console.log("Got error while reading Members " + err);
+				}
+			});
+}
+
+function getFamily(id) {
+	console.log("Getting Relationship of " + id);
+	var db = window.openDatabase("Kinsfolk", "1.0", "Kinsfolk", 200000);
+	$("#familyList").html("");
 	try {
 		db
 				.transaction(function(tx) {
-					ensureRootTableExists(tx);
-					var query = "select * from member where member_id=(select mother_node_id from node where father_node_id="+id+")";
+					var query = "select * from (select * from member m join node n on n.member_id=m.member_id where m.member_id=(select father_node_id from node where member_id="
+							+ id
+							+ ")) union select * from member m join node n on n.member_id=m.member_id where m.member_id=(select mother_node_id from node where member_id="
+							+ id + ")";
 					tx
 							.executeSql(
 									query,
@@ -450,17 +565,35 @@ function getSpouse(id){
 									function(tx, results) {
 										if (results != null
 												&& results.rows != null) {
-											if(results.rows.length > 0){
+											for ( var index = 0; index < results.rows.length; index++) {
 												var entry = results.rows
-												.item(0);
-												html ='<li>{"id":"'+entry.member_id+'","node_id":"'+entry.member_id+'","name":"'+entry.name+'","parent":"'+id+'","type":"spouse"}</li>';
-												$(".tree-root").append(html);
+														.item(index);
+												var dName = entry.name;
+												if (entry.nick != "")
+													dName = entry.nick;
+												if (entry.gender == 1)
+													relationship = "Father";
+												else
+													relationship = "Mother";
+												$('#familyList')
+														.append(
+																'<li><a href="#profile" class="details" id="'
+																		+ entry.member_id
+																		+ '"><!--<img src="" class="ul-li-icon" />--> <h3>&nbsp;'
+																		+ dName
+																		+ '</h3><p>'
+																		+ relationship
+																		+ '</p></a>');
 											}
-										}								
+											$('#familyList')
+													.listview('refresh');
+										}
+										getSpouse(id, 2);
+										getChildren(id, 2);
 									},
 									function(error) {
 										console
-												.log("Got error fetching Members "
+												.log("Got error fetching Family "
 														+ error.code
 														+ " "
 														+ error.message);
@@ -471,36 +604,24 @@ function getSpouse(id){
 	}
 }
 
-function getChildren(id){
-	var db = window.openDatabase("Kinsfolk", "1.0", "Kinsfolk", 200000);	
+function getGender(id, callBack) {
+	var db = window.openDatabase("Kinsfolk", "1.0", "Kinsfolk", 200000);
 	try {
-		db
-				.transaction(function(tx) {
-					var query = "SELECT * FROM Member m join Node n on m.member_id=n.member_id where n.father_node_id="+id;
-					tx
-							.executeSql(
-									query,
-									[],
-									function(tx, results) {										
-										if (results != null
-												&& results.rows != null) {
-											for ( var index = 0; index < results.rows.length; index++) {
-												var entry = results.rows.item(index);
-												html ='<li>{"id":"'+entry.member_id+'","node_id":"'+entry.member_id+'","name":"'+entry.name+'","parent":"'+id+'","type":"node"}</li>';
-												$(".tree-root").append(html);
-												getSpouse(entry.member_id);
-												getChildren(entry.member_id);
-											}
-										}									
-									},
-									function(error) {
-										console
-												.log("Got error fetching Members "
-														+ error.code
-														+ " "
-														+ error.message);
-									});
-				});
+		db.transaction(function(tx) {
+			ensureRootTableExists(tx);
+			var query = "SELECT * FROM node where member_id=" + id;
+			tx.executeSql(query, [], function(tx, results) {
+				var member = new Object();
+				if (results != null && results.rows != null) {
+					var entry = results.rows.item(0);
+
+					callBack(entry.gender);
+				}
+			}, function(error) {
+				console.log("Got error fetching Gender " + error.code + " "
+						+ error.message);
+			});
+		});
 	} catch (err) {
 		console.log("Got error while reading Members " + err);
 	}

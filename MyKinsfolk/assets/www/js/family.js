@@ -3,7 +3,7 @@ $(window).load(function() {
 	setTreeSize();
 	initDB();
 	getTree();
-	var options = new primitives.orgdiagram.Config();
+	//var options = new primitives.orgdiagram.Config();
 
 	$("#self-btn").live("click", function() {
 		checkSelf();
@@ -11,6 +11,7 @@ $(window).load(function() {
 
 	$(".home-btn").live("click", function() {
 		initDB();
+		getTree();
 	});
 
 	$(".details").live("click", function() {
@@ -84,6 +85,8 @@ $(window).load(function() {
 		$("#gallery").hide();
 		$("#moreinfo").hide();
 		$("#relationships").show();
+		
+		getFamily($("#prof-id").val());
 	});
 
 	$('#searchmember').live('keypress', function(e) {
@@ -114,6 +117,7 @@ $(window).load(function() {
 	$("#tree-btn").live("click", function() {
 		// getTree();
 		// console.log($(".tree-root").html());
+		var options = new primitives.orgdiagram.Config();
 		var json = '{"nodes":[';
 		var i = 1;
 		$(".tree-root li").each(function() {
@@ -123,7 +127,7 @@ $(window).load(function() {
 			i++;
 		});
 		json += ']}';
-		console.log(json);
+		//console.log(json);
 		var data = jQuery.parseJSON(json);
 		console.log(data.nodes.length);
 		var parents = new Array();
