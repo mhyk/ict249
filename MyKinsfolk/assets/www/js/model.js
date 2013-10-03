@@ -14,6 +14,10 @@ function ensureRootTableExists(tx) {
 	tx.executeSql("CREATE TABLE IF NOT EXISTS Root(member_id);");
 }
 
+function ensureRootTableExists(tx) {
+	tx.executeSql("CREATE TABLE IF NOT EXISTS Root(member_id);");
+}
+
 function initDB() {
 	var db = window.openDatabase("Kinsfolk", "1.0", "Kinsfolk", 200000);
 	try {
@@ -123,39 +127,148 @@ function checkSelf() {
 
 function insertNewMember(data) {
 	var db = window.openDatabase("Kinsfolk", "1.0", "Kinsfolk", 200000);
-	db.transaction(function(tx) {
-		ensureMemberTableExists(tx);
-		var insertStmt = "INSERT INTO Member (name,nick,owner) VALUES ('"
-				+ data.name + "','" + data.nick + "'," + data.owner + ")";
-		tx.executeSql(insertStmt, [], function(tx, results) {
-			if (owner = 1)
-				initRoot(results.insertId);
-			getProfile(results.insertId);
-		});
+	db
+			.transaction(
+					function(tx) {
+						ensureMemberTableExists(tx);
+						var insertStmt = "INSERT INTO Member (name,nick,owner) VALUES ('"
+								+ data.name
+								+ "','"
+								+ data.nick
+								+ "',"
+								+ data.owner + ")";
+						tx
+								.executeSql(
+										insertStmt,
+										[],
+										function(tx, results) {
+											var nodeData = Object();
+											nodeData.member_id = results.insertId;
+											if (data.owner == 1) {
+												initRoot(results.insertId);
+												nodeData.father_id = 0;
+												nodeData.mother_id = 0;
+												nodeData.gender = data.gender;
+												insertToNode(nodeData);
+												getProfile(results.insertId);
+											} else {
+												getGender(
+														data.related_id,
+														function(sex) {
+															if (data.relationship == 1) {
 
-	}, function(error) {
-		console.log("Data insert failed " + error.code + " " + error.message);
-	}, function() {
-		console.log("Data insert successful");
-	});
+															} else if (data.relationship == 2) {
+
+															} else if (data.relationship == 3) {
+
+															} else if (data.relationship == 4) {
+
+															} else if (data.relationship == 6
+																	|| data.relationship == 7) {
+																getSpouseID(
+																		data.related_id,
+																		sex,
+																		function(
+																				spouse) {
+																			if (data.relationship == 6)
+																				nodeData.gender = 1;
+																			else
+																				nodeData.gender = 2;
+
+																			if (spouse.id != 0) {
+																				if (sex == 1) {
+																					nodeData.father_id = data.related_id;
+																					nodeData.mother_id = spouse.id;
+																				} else {
+																					nodeData.mother_id = data.related_id;
+																					nodeData.father_id = spouse.id;
+																				}
+																			} else {
+																				if (sex == 1) {
+																					nodeData.father_id = data.related_id;
+																					nodeData.mother_id = 0;
+																				} else {
+																					nodeData.mother_id = data.related_id;
+																					nodeData.father_id = 0;
+																				}
+																			}
+																			console
+																					.log(nodeData);
+																			insertToNode(nodeData);
+																		});
+
+															} else if (data.relationship == 5) {
+																nodeData.father_id = 0;
+																nodeData.mother_id = 0;
+																var query = "";
+																if(sex == 1){
+																	nodeData.gender = 2;
+																	query = "update node set mother_node_id="+nodeData.member_id+" where father_node_id="+data.related_id;
+																}	
+																else{
+																	nodeData.gender = 1;
+																	query = "update node set father_node_id="+nodeData.member_id+" where mother_node_id="+data.related_id;
+																}	
+																insertToNode(nodeData);
+																updateNode(query);
+															}
+														});
+
+											}
+
+										});
+
+					}, function(error) {
+						console.log("Data insert failed " + error.code + " "
+								+ error.message);
+					}, function() {
+						console.log("Data insert successful");
+					});
 }
 
 function insertToNode(data) {
+	console.log("Inserting to Node");
 	var db = window.openDatabase("Kinsfolk", "1.0", "Kinsfolk", 200000);
-	db.transaction(function(tx) {
-		ensureMemberTableExists(tx);
-		var insertStmt = "INSERT INTO Member (name,nick,owner) VALUES ('"
-				+ name + "','" + data.nick + "'," + data.owner + ")";
-		// console.log(insertStmt);
-		tx.executeSql(insertStmt, [], function(tx, results) {
-			getProfile(results.insertId);
-		});
+	db
+			.transaction(
+					function(tx) {
+						ensureNodeTableExists(tx);
+						var insertStmt = "insert into node(member_id,father_node_id,mother_node_id,gender) values("
+								+ data.member_id
+								+ ","
+								+ data.father_id
+								+ ","
+								+ data.mother_id + "," + data.gender + ");";
+						console.log(insertStmt);
+						tx.executeSql(insertStmt, [], function(tx, results) {
 
-	}, function(error) {
-		console.log("Data insert failed " + error.code + " " + error.message);
-	}, function() {
-		console.log("Data insert successful");
-	});
+						});
+
+					}, function(error) {
+						console.log("Data insert failed " + error.code + " "
+								+ error.message);
+					}, function() {
+						console.log("Data insert successful");
+					});
+}
+
+function updateNode(query){
+	var db = window.openDatabase("Kinsfolk", "1.0", "Kinsfolk", 200000);
+	db
+			.transaction(
+					function(tx) {
+						ensureNodeTableExists(tx);						
+						console.log(query);
+						tx.executeSql(query, [], function(tx, results) {
+
+						});
+
+					}, function(error) {
+						console.log("Data update failed " + error.code + " "
+								+ error.message);
+					}, function() {
+						console.log("Data update successful");
+					});
 }
 
 function getAllMembers() {
@@ -361,16 +474,19 @@ function getTree() {
 	try {
 		db
 				.transaction(function(tx) {
-					ensureRootTableExists(tx);
+					ensureNodeTableExists(tx);
 					var query = "SELECT * FROM Member m join Root r on m.member_id=r.member_id";
 					tx.executeSql(query, [], function(tx, results) {
 						var member = new Object();
 						if (results != null && results.rows != null) {
 
 							var entry = results.rows.item(0);
+							var dName = entry.name;
+							if (entry.nick != "")
+								dName = entry.nick;
 							html = '<li>{"id":"' + entry.member_id
 									+ '","node_id":"' + entry.member_id
-									+ '","name":"' + entry.name
+									+ '","name":"' + dName
 									+ '","parent":"0","type":"root"}</li>';
 							$(".tree-root").append(html);
 							getSpouse(entry.member_id, 1);
@@ -386,7 +502,42 @@ function getTree() {
 	}
 }
 
-function getSpouse(id, view) {
+function getSpouseID(id, sex, callBack) {
+	var db = window.openDatabase("Kinsfolk", "1.0", "Kinsfolk", 200000);
+	try {
+		db
+				.transaction(function(tx) {
+					ensureRootTableExists(tx);
+					if (sex == 1)
+						var query = "select * from member where member_id=(select mother_node_id from node where father_node_id="
+								+ id + ")";
+					else
+						var query = "select * from member where member_id=(select father_node_id from node where mother_node_id="
+								+ id + ")";
+					tx.executeSql(query, [], function(tx, results) {
+						var data = new Object();
+						if (results != null && results.rows != null) {
+							if (results.rows.length > 0) {
+								var entry = results.rows.item(0);
+								data.gender = entry.gender;
+								data.id = entry.member_id;
+							} else {
+								data.id = 0;
+								data.gender = 0;
+							}
+						}
+						callBack(data);
+					}, function(error) {
+						console.log("Got error fetching Members " + error.code
+								+ " " + error.message);
+					});
+				});
+	} catch (err) {
+		console.log("Got error while reading Members " + err);
+	}
+}
+
+function getSpouse(id, view, callBack) {
 	getGender(
 			id,
 			function(sex) {
@@ -474,12 +625,12 @@ function getChildren(id, view) {
 				try {
 					db
 							.transaction(function(tx) {
-								if(sex == 1)
+								if (sex == 1)
 									var query = "SELECT * FROM Member m join Node n on m.member_id=n.member_id where n.father_node_id="
-										+ id;
+											+ id;
 								else
 									var query = "SELECT * FROM Member m join Node n on m.member_id=n.member_id where n.mother_node_id="
-										+ id;
+											+ id;
 								tx
 										.executeSql(
 												query,
@@ -548,12 +699,13 @@ function getChildren(id, view) {
 }
 
 function getFamily(id) {
-	console.log("Getting Relationship of " + id);
+	console.log("Getting Relationship");
 	var db = window.openDatabase("Kinsfolk", "1.0", "Kinsfolk", 200000);
 	$("#familyList").html("");
 	try {
 		db
 				.transaction(function(tx) {
+					ensureNodeTableExists(tx);
 					var query = "select * from (select * from member m join node n on n.member_id=m.member_id where m.member_id=(select father_node_id from node where member_id="
 							+ id
 							+ ")) union select * from member m join node n on n.member_id=m.member_id where m.member_id=(select mother_node_id from node where member_id="

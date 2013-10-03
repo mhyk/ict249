@@ -39,14 +39,15 @@ $(window).load(function() {
 		member.name = $("#fname").val();
 		member.nick = $("#nick").val();
 		member.owner = 1;
+		member.gender = $("#gender").val();
 		insertNewMember(member);
 		$("#self-btn").trigger('click');
 	});
 
 	$("#save-family-btn").live("click", function() {
 		var member = new Object();
-		member.name = $("#fname").val();
-		member.nick = $("#nick").val();
+		member.name = $("#rname").val();
+		member.nick = $("#rnick").val();
 		member.relationship = $("#relationship").val();
 		member.owner = 0;
 		member.related_id = $("#related-id").val();
