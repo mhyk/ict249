@@ -18,6 +18,10 @@ function ensureRootTableExists(tx) {
 	tx.executeSql("CREATE TABLE IF NOT EXISTS Root(member_id);");
 }
 
+function ensurePhotoTableExists(tx){
+	tx.executeSql("CREATE TABLE IF NOT EXISTS Photo(id integer primary key autoincrement,member_id integer,img varchar(100),primary_pic integer);");
+}
+
 function initDB() {
 	var db = window.openDatabase("Kinsfolk", "1.0", "Kinsfolk", 200000);
 	try {
@@ -105,6 +109,9 @@ function checkSelf() {
 											$("#moreinfo").show();
 											$("#activeTab").val(1);
 											$("#relationships").hide();
+											
+											getPhotos(entry.member_id);
+											
 											location.href = "#profile";
 
 										} else {
@@ -156,12 +163,59 @@ function insertNewMember(data) {
 														data.related_id,
 														function(sex) {
 															if (data.relationship == 1) {
+//																getParentsID(data.related_id,function(parents){
+//																	if(parents.father_id== 0 && parents.mother_id == 0){
+																		nodeData.father_id = 0;
+																		nodeData.mother_id = 0;
+																		nodeData.gender = 1;
 
+																		var query = "update node set father_node_id="
+																				+ nodeData.member_id
+																				+ " where member_id="
+																				+ data.related_id;
+																		insertToNode(nodeData);
+																		updateNode(query);
+																		updateRoot(nodeData.member_id);
+//																	}
+//																	
+//																});
+																
 															} else if (data.relationship == 2) {
 
-															} else if (data.relationship == 3) {
-
-															} else if (data.relationship == 4) {
+															} else if (data.relationship == 3 || data.relationship == 4) {
+																if (data.relationship == 3)
+																	nodeData.gender = 1;
+																else
+																	nodeData.gender = 2;
+																getParentsID(data.related_id,function(parents){
+																	if(parents.father_id != 0 || parents.mother_id != 0){
+																		nodeData.father_id = parents.father_id;
+																		nodeData.mother_id = parents.mother_id;
+																		insertToNode(nodeData);
+																	}
+																	else if(parents.father_id == 0 || parents.mother_id == 0){
+																		insertTempFather(function(tmpId){
+																			nodeData.father_id = tmpId;
+																			nodeData.mother_id = parents.mother_id;
+																			insertToNode(nodeData);
+																			
+																			var tempFather = new Object();
+																			tempFather.father_id = 0;
+																			tempFather.mother_id = 0;
+																			tempFather.gender = 1;
+																			tempFather.member_id = tmpId;
+																			
+																			insertToNode(tempFather);																																					
+																			
+																			var query = "update node set father_node_id="+tmpId+" where member_id="+data.related_id;
+																			updateNode(query);
+																			updateRoot(tmpId);
+																		});
+																		
+																		
+																	}
+																});
+																
 
 															} else if (data.relationship == 6
 																	|| data.relationship == 7) {
@@ -201,22 +255,47 @@ function insertNewMember(data) {
 																nodeData.father_id = 0;
 																nodeData.mother_id = 0;
 																var query = "";
-																if(sex == 1){
+																if (sex == 1) {
 																	nodeData.gender = 2;
-																	query = "update node set mother_node_id="+nodeData.member_id+" where father_node_id="+data.related_id;
-																}	
-																else{
+																	query = "update node set mother_node_id="
+																			+ nodeData.member_id
+																			+ " where father_node_id="
+																			+ data.related_id;
+																} else {
 																	nodeData.gender = 1;
-																	query = "update node set father_node_id="+nodeData.member_id+" where mother_node_id="+data.related_id;
-																}	
+																	query = "update node set father_node_id="
+																			+ nodeData.member_id
+																			+ " where mother_node_id="
+																			+ data.related_id;
+																}
 																insertToNode(nodeData);
 																updateNode(query);
 															}
 														});
 
 											}
-
+										getFamily(results.insertId);	
 										});
+
+					}, function(error) {
+						console.log("Data insert failed " + error.code + " "
+								+ error.message);
+					}, function() {
+						console.log("Data insert successful");
+					});
+}
+
+function insertTempFather(callBack){
+	var db = window.openDatabase("Kinsfolk", "1.0", "Kinsfolk", 200000);
+	db
+			.transaction(
+					function(tx) {
+						ensureNodeTableExists(tx);
+						var insertStmt = "insert into member(name,nick) values('Unknown','Unknown')";
+						console.log(insertStmt);
+						tx.executeSql(insertStmt, [], function(tx, results) {
+							callBack(results.insertId);
+						});
 
 					}, function(error) {
 						console.log("Data insert failed " + error.code + " "
@@ -252,23 +331,20 @@ function insertToNode(data) {
 					});
 }
 
-function updateNode(query){
+function updateNode(query) {
 	var db = window.openDatabase("Kinsfolk", "1.0", "Kinsfolk", 200000);
-	db
-			.transaction(
-					function(tx) {
-						ensureNodeTableExists(tx);						
-						console.log(query);
-						tx.executeSql(query, [], function(tx, results) {
+	db.transaction(function(tx) {
+		ensureNodeTableExists(tx);
+		console.log(query);
+		tx.executeSql(query, [], function(tx, results) {
 
-						});
+		});
 
-					}, function(error) {
-						console.log("Data update failed " + error.code + " "
-								+ error.message);
-					}, function() {
-						console.log("Data update successful");
-					});
+	}, function(error) {
+		console.log("Data update failed " + error.code + " " + error.message);
+	}, function() {
+		console.log("Data update successful");
+	});
 }
 
 function getAllMembers() {
@@ -296,7 +372,7 @@ function getAllMembers() {
 														.append(
 																'<li><a href="#profile" class="details" id="'
 																		+ entry.member_id
-																		+ '"><!--<img src="" class="ul-li-icon" />--> <h3>&nbsp;'
+																		+ '"><img src="img/pic.jpg" class="ul-li-icon" /> <h3>&nbsp;'
 																		+ dName
 																		+ '</h3></a>');
 											}
@@ -348,6 +424,8 @@ function getProfile(memid) {
 						$("#profBdayTxt").val(entry.birthday);
 						$("#profPhoneTxt").val(entry.phone);
 						$("#profEmailTxt").val(entry.email);
+						
+						getPhotos(entry.member_id);
 					}
 
 				} else {
@@ -390,7 +468,7 @@ function searchMembers(txt) {
 														.append(
 																'<li><a href="#profile" class="details" id="'
 																		+ entry.member_id
-																		+ '"><!--<img src="" class="ul-li-icon" />--> <h3>&nbsp;'
+																		+ '"><img src="img/pic.jpg" class="ul-li-icon" /> <h3>&nbsp;'
 																		+ dName
 																		+ '</h3></a>');
 											}
@@ -475,22 +553,24 @@ function getTree() {
 		db
 				.transaction(function(tx) {
 					ensureNodeTableExists(tx);
+					ensureRootTableExists(tx);
 					var query = "SELECT * FROM Member m join Root r on m.member_id=r.member_id";
 					tx.executeSql(query, [], function(tx, results) {
 						var member = new Object();
 						if (results != null && results.rows != null) {
-
-							var entry = results.rows.item(0);
-							var dName = entry.name;
-							if (entry.nick != "")
-								dName = entry.nick;
-							html = '<li>{"id":"' + entry.member_id
-									+ '","node_id":"' + entry.member_id
-									+ '","name":"' + dName
-									+ '","parent":"0","type":"root"}</li>';
-							$(".tree-root").append(html);
-							getSpouse(entry.member_id, 1);
-							getChildren(entry.member_id, 1);
+							if(results.rows.length > 0){
+								var entry = results.rows.item(0);
+								var dName = entry.name;
+								if (entry.nick != "")
+									dName = entry.nick;
+								html = '<li>{"id":"' + entry.member_id
+										+ '","node_id":"' + entry.member_id
+										+ '","name":"' + dName
+										+ '","parent":"0","type":"root"}</li>';
+								$(".tree-root").append(html);
+								getSpouse(entry.member_id, 1);
+								getChildren(entry.member_id, 1);
+							}							
 						}
 					}, function(error) {
 						console.log("Got error fetching Members " + error.code
@@ -537,7 +617,34 @@ function getSpouseID(id, sex, callBack) {
 	}
 }
 
+function getParentsID(id, callBack) {
+	var db = window.openDatabase("Kinsfolk", "1.0", "Kinsfolk", 200000);
+	try {
+		db.transaction(function(tx) {
+			ensureRootTableExists(tx);
+			var query = "Select * from node where member_id="+id;
+			tx.executeSql(query, [], function(tx, results) {
+				var data = new Object();
+				if (results != null && results.rows != null) {
+					if (results.rows.length > 0) {
+						var entry = results.rows.item(0);
+						data.father_id = entry.father_node_id;
+						data.mother_id = entry.mother_node_id;
+					} 
+				}
+				callBack(data);
+			}, function(error) {
+				console.log("Got error fetching Members " + error.code + " "
+						+ error.message);
+			});
+		});
+	} catch (err) {
+		console.log("Got error while reading Members " + err);
+	}
+}
+
 function getSpouse(id, view, callBack) {
+	console.log("Getting Spouse of "+id);
 	getGender(
 			id,
 			function(sex) {
@@ -617,6 +724,7 @@ function getSpouse(id, view, callBack) {
 }
 
 function getChildren(id, view) {
+	console.log("Getting Children of "+id);
 	getGender(
 			id,
 			function(sex) {
@@ -657,8 +765,8 @@ function getChildren(id, view) {
 																$(".tree-root")
 																		.append(
 																				html);
-																getSpouse(entry.member_id);
-																getChildren(entry.member_id);
+																getSpouse(entry.member_id,1);
+																getChildren(entry.member_id,1);
 															} else {
 																if (entry.gender == 1)
 																	relationship = "Son";
@@ -710,6 +818,7 @@ function getFamily(id) {
 							+ id
 							+ ")) union select * from member m join node n on n.member_id=m.member_id where m.member_id=(select mother_node_id from node where member_id="
 							+ id + ")";
+					console.log(query);
 					tx
 							.executeSql(
 									query,
@@ -727,15 +836,18 @@ function getFamily(id) {
 													relationship = "Father";
 												else
 													relationship = "Mother";
-												$('#familyList')
-														.append(
-																'<li><a href="#profile" class="details" id="'
-																		+ entry.member_id
-																		+ '"><!--<img src="" class="ul-li-icon" />--> <h3>&nbsp;'
-																		+ dName
-																		+ '</h3><p>'
-																		+ relationship
-																		+ '</p></a>');
+												if(dName != "Unknown"){
+													$('#familyList')
+													.append(
+															'<li><a href="#profile" class="details" id="'
+																	+ entry.member_id
+																	+ '"><img src="img/pic.jpg" class="ul-li-icon" /> <h3>&nbsp;'
+																	+ dName
+																	+ '</h3><p>'
+																	+ relationship
+																	+ '</p></a>');
+												}
+												
 											}
 											$('#familyList')
 													.listview('refresh');
@@ -768,6 +880,48 @@ function getGender(id, callBack) {
 					var entry = results.rows.item(0);
 
 					callBack(entry.gender);
+				}
+			}, function(error) {
+				console.log("Got error fetching Gender " + error.code + " "
+						+ error.message);
+			});
+		});
+	} catch (err) {
+		console.log("Got error while reading Members " + err);
+	}
+}
+
+function savePhoto(id,photo){
+	var db = window.openDatabase("Kinsfolk", "1.0", "Kinsfolk", 200000);
+	db.transaction(function(tx) {
+		ensurePhotoTableExists(tx);
+		var insertStmt = "insert into Photo(member_id,img,primary_pic) values("+id+",'"+photo+"',0)";
+		// console.log(insertStmt);
+		tx.executeSql(insertStmt, [], function(tx, results) {
+		});
+
+	}, function(error) {
+		console.log("Data insert failed " + error.code + " " + error.message);
+	}, function() {
+		console.log("Data insert successful");
+	});
+}
+
+function getPhotos(id){
+	var db = window.openDatabase("Kinsfolk", "1.0", "Kinsfolk", 200000);
+	try {
+		db.transaction(function(tx) {
+			ensurePhotoTableExists(tx);
+			var query = "SELECT img FROM Photo where member_id=" + id;
+			tx.executeSql(query, [], function(tx, results) {
+				$(".gallery-thumbs").html("");
+				var member = new Object();
+				if (results != null && results.rows != null) {
+					for ( var index = 0; index < results.rows.length; index++) {
+						var entry = results.rows.item(0);
+						$(".gallery-thumbs")
+						.append("<li><img src="+entry.img+" width=75 height=75></li>");
+					}
 				}
 			}, function(error) {
 				console.log("Got error fetching Gender " + error.code + " "
