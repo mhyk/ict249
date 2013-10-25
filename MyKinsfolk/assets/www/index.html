@@ -26,6 +26,7 @@
 <script type="text/javascript" src="jquery/jquery-1.8.3.min.js"></script>
 <script type="text/javascript" src="jquery/jquery.mobile-1.3.1.min.js"></script>
 <script type="text/javascript" src="jquery/jquery-ui.min.js"></script>
+<script type="text/javascript" src="jquery/imgscale.jquery.min.js"></script>
 <script type="text/javascript" src="js/primitives.min.js"></script>
 <script type="text/javascript" src="js/model.js"></script>
 <script type="text/javascript" src="js/family.js"></script>
@@ -70,13 +71,18 @@
 	display: block;
 }
 
-ul.gallery-thumbs li{	
+ul.gallery-thumbs li {
 	float: left;
 	position: relative;
 	background: transparent;
-	margin:0px;
+	margin: 0px;
 	width: 80px;
 	height: 80px
+}
+
+.ul-li-has-thumb{
+	height:80px;
+	width: 80px;
 }
 </style>
 
@@ -108,8 +114,8 @@ ul.gallery-thumbs li{
 			<div id="prof-info" style="display: block">
 				<table border=0>
 					<tr>
-						<td><span id="prof-pic"><img src="img/pic.jpg"
-								width=100 height=100></span></td>
+						<td><span><img src="img/pic.jpg"
+								width=100 height=100 id="prof-pic"></span></td>
 						<!-- <td valign="top"><span id="prof-name"></span></td>-->
 					</tr>
 				</table>
@@ -128,8 +134,7 @@ ul.gallery-thumbs li{
 			<div id="gallery">
 				<fieldset class="ui-grid-a">
 					<div class="ui-block-a">
-						<a href="#" data-role="button" id="capturePhoto">Capture
-							Photo</a>
+						<a href="#" data-role="button" id="capturePhoto">Capture Photo</a>
 					</div>
 					<div class="ui-block-b">
 						<a href="#" data-role="button" id="uploadPhoto">Upload Photo</a>
@@ -137,13 +142,22 @@ ul.gallery-thumbs li{
 				</fieldset>
 				<div>
 					<ul class="gallery-thumbs">
-						<!--  <li><img src="img/pic.jpg" width=75 height=75 /></li>
-						<li><img src="img/pic.jpg" width=75 height=75 /></li>
-						<li><img src="img/pic.jpg" width=75 height=75 /></li>
-						<li><img src="img/pic.jpg" width=75 height=75 /></li>
-						<li><img src="img/pic.jpg" width=75 height=75 /></li>
-						<li><img src="img/pic.jpg" width=75 height=75 /></li>-->
 					</ul>
+				</div>
+				<div id="gallery-popup" data-role="popup">
+					<a href="#" data-rel="back" data-role="button" data-theme="a"
+						data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>
+					<br> <a href="#" data-role="button" id="setPrimary">Set
+						Primary Photo</a><br> <input type="hidden" id="photoID">
+					<div align="center"><img id="img-large" src=""></div>					 
+					<fieldset class="ui-grid-a" style="visibility:hidden">
+						<div class="ui-block-a">
+							<a href="#" data-role="button" id="previous">Previous</a>
+						</div>
+						<div class="ui-block-b">
+							<a href="#" data-role="button" id="next">Next</a>
+						</div>
+					</fieldset>
 				</div>
 			</div>
 
@@ -301,6 +315,7 @@ ul.gallery-thumbs li{
 			<input type="search" name="search" id="searchmember" value="" /><br>
 			<ul id="memberList" data-role="listview"></ul>
 		</div>
+		<input type="hidden" id="tmp-img">
 	</div>
 	<div id="tree" data-role="page" data-fullscreen="true" data-theme="a">
 		<div data-role="header">
@@ -316,6 +331,6 @@ ul.gallery-thumbs li{
 
 			</div>
 		</div>
-	</div>
+	</div>	
 </body>
 </html>

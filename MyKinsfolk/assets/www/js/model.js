@@ -18,8 +18,9 @@ function ensureRootTableExists(tx) {
 	tx.executeSql("CREATE TABLE IF NOT EXISTS Root(member_id);");
 }
 
-function ensurePhotoTableExists(tx){
-	tx.executeSql("CREATE TABLE IF NOT EXISTS Photo(id integer primary key autoincrement,member_id integer,img varchar(100),primary_pic integer);");
+function ensurePhotoTableExists(tx) {
+	tx
+			.executeSql("CREATE TABLE IF NOT EXISTS Photo(id integer primary key autoincrement,member_id integer,img varchar(100),primary_pic integer);");
 }
 
 function initDB() {
@@ -89,6 +90,11 @@ function checkSelf() {
 											// $("#prof-name").html(
 											// "<h3>" + dName
 											// + "</h3>");
+											getPrimaryPic(entry.member_id,
+													function(img) {
+														$("#prof-pic").attr(
+																"src", img);
+													});
 
 											$("#prof-name").html(dName);
 											$("#profName").html(entry.name);
@@ -109,9 +115,9 @@ function checkSelf() {
 											$("#moreinfo").show();
 											$("#activeTab").val(1);
 											$("#relationships").hide();
-											
+
 											getPhotos(entry.member_id);
-											
+
 											location.href = "#profile";
 
 										} else {
@@ -151,6 +157,7 @@ function insertNewMember(data) {
 										function(tx, results) {
 											var nodeData = Object();
 											nodeData.member_id = results.insertId;
+											saveDefaultPhoto(results.insertId);
 											if (data.owner == 1) {
 												initRoot(results.insertId);
 												nodeData.father_id = 0;
@@ -163,59 +170,137 @@ function insertNewMember(data) {
 														data.related_id,
 														function(sex) {
 															if (data.relationship == 1) {
-//																getParentsID(data.related_id,function(parents){
-//																	if(parents.father_id== 0 && parents.mother_id == 0){
-																		nodeData.father_id = 0;
-																		nodeData.mother_id = 0;
-																		nodeData.gender = 1;
+																getParentsID(
+																		data.related_id,
+																		function(
+																				parents) {
+																			if (parents.father_id == 0) {
+																				nodeData.father_id = 0;
+																				nodeData.mother_id = 0;
+																				nodeData.gender = 1;
 
-																		var query = "update node set father_node_id="
-																				+ nodeData.member_id
-																				+ " where member_id="
-																				+ data.related_id;
-																		insertToNode(nodeData);
-																		updateNode(query);
-																		updateRoot(nodeData.member_id);
-//																	}
-//																	
-//																});
-																
+																				var query = "update node set father_node_id="
+																						+ nodeData.member_id
+																						+ " where member_id="
+																						+ data.related_id;
+																				insertToNode(nodeData);
+																				updateNode(query);
+																				updateRoot(nodeData.member_id);
+																			} else {
+																				getMemberData(
+																						parents.father_id,
+																						function(
+																								data) {
+																							if (data.name == 'Unknown') {
+																								console
+																										.log("Updating Unknown");
+																								nodeData.father_id = 0;
+																								nodeData.mother_id = 0;
+																								nodeData.gender = 1;
+																								insertToNode(nodeData);
+
+																								var query = "update node set father_node_id="
+																										+ nodeData.member_id
+																										+ " where father_node_id="
+																										+ parents.father_id;
+																								updateNode(query);
+
+																								updateRoot(nodeData.member_id);
+																							}
+																						});
+																			}
+
+																		});
+
 															} else if (data.relationship == 2) {
 
-															} else if (data.relationship == 3 || data.relationship == 4) {
+																getParentsID(
+																		data.related_id,
+																		function(
+																				parents) {
+																			if (parents.father_id != 0) {
+																				nodeData.father_id = 0;
+																				nodeData.mother_id = 0;
+																				nodeData.gender = 2;
+																				insertToNode(nodeData);
+																				var query = "update node set mother_node_id="
+																						+ nodeData.member_id
+																						+ " where member_id="
+																						+ data.related_id;
+																				updateNode(query);
+																			} else if (parents.father_id == 0) {
+																				insertTempFather(function(
+																						tmpId) {
+
+																					var tempFather = new Object();
+																					tempFather.father_id = 0;
+																					tempFather.mother_id = 0;
+																					tempFather.gender = 1;
+																					tempFather.member_id = tmpId;
+
+																					insertToNode(tempFather);
+
+																					nodeData.father_id = 0;
+																					nodeData.mother_id = 0;
+																					nodeData.gender = 2;
+																					insertToNode(nodeData);
+
+																					var query = "update node set father_node_id="
+																							+ tmpId
+																							+ ", mother_node_id="
+																							+ nodeData.member_id
+																							+ " where member_id="
+																							+ data.related_id;
+																					updateNode(query);
+																					updateRoot(tmpId);
+
+																				});
+																			}
+																		});
+
+															} else if (data.relationship == 3
+																	|| data.relationship == 4) {
+																console
+																		.log("adding sibling");
 																if (data.relationship == 3)
 																	nodeData.gender = 1;
 																else
 																	nodeData.gender = 2;
-																getParentsID(data.related_id,function(parents){
-																	if(parents.father_id != 0 || parents.mother_id != 0){
-																		nodeData.father_id = parents.father_id;
-																		nodeData.mother_id = parents.mother_id;
-																		insertToNode(nodeData);
-																	}
-																	else if(parents.father_id == 0 || parents.mother_id == 0){
-																		insertTempFather(function(tmpId){
-																			nodeData.father_id = tmpId;
-																			nodeData.mother_id = parents.mother_id;
-																			insertToNode(nodeData);
-																			
-																			var tempFather = new Object();
-																			tempFather.father_id = 0;
-																			tempFather.mother_id = 0;
-																			tempFather.gender = 1;
-																			tempFather.member_id = tmpId;
-																			
-																			insertToNode(tempFather);																																					
-																			
-																			var query = "update node set father_node_id="+tmpId+" where member_id="+data.related_id;
-																			updateNode(query);
-																			updateRoot(tmpId);
+																getParentsID(
+																		data.related_id,
+																		function(
+																				parents) {
+																			if (parents.father_id != 0
+																					|| parents.mother_id != 0) {
+																				nodeData.father_id = parents.father_id;
+																				nodeData.mother_id = parents.mother_id;
+																				insertToNode(nodeData);
+																			} else if (parents.father_id == 0
+																					|| parents.mother_id == 0) {
+																				insertTempFather(function(
+																						tmpId) {
+																					nodeData.father_id = tmpId;
+																					nodeData.mother_id = parents.mother_id;
+																					insertToNode(nodeData);
+
+																					var tempFather = new Object();
+																					tempFather.father_id = 0;
+																					tempFather.mother_id = 0;
+																					tempFather.gender = 1;
+																					tempFather.member_id = tmpId;
+
+																					insertToNode(tempFather);
+
+																					var query = "update node set father_node_id="
+																							+ tmpId
+																							+ " where member_id="
+																							+ data.related_id;
+																					updateNode(query);
+																					updateRoot(tmpId);
+																				});
+
+																			}
 																		});
-																		
-																		
-																	}
-																});
-																
 
 															} else if (data.relationship == 6
 																	|| data.relationship == 7) {
@@ -246,8 +331,6 @@ function insertNewMember(data) {
 																					nodeData.father_id = 0;
 																				}
 																			}
-																			console
-																					.log(nodeData);
 																			insertToNode(nodeData);
 																		});
 
@@ -274,7 +357,7 @@ function insertNewMember(data) {
 														});
 
 											}
-										getFamily(results.insertId);	
+											getFamily(results.insertId);
 										});
 
 					}, function(error) {
@@ -285,7 +368,8 @@ function insertNewMember(data) {
 					});
 }
 
-function insertTempFather(callBack){
+function insertTempFather(callBack) {
+	console.log("Adding Unknown Father");
 	var db = window.openDatabase("Kinsfolk", "1.0", "Kinsfolk", 200000);
 	db
 			.transaction(
@@ -294,6 +378,7 @@ function insertTempFather(callBack){
 						var insertStmt = "insert into member(name,nick) values('Unknown','Unknown')";
 						console.log(insertStmt);
 						tx.executeSql(insertStmt, [], function(tx, results) {
+							saveDefaultPhoto(results.insertId);
 							callBack(results.insertId);
 						});
 
@@ -357,7 +442,7 @@ function getAllMembers() {
 					ensureMemberTableExists(tx);
 					tx
 							.executeSql(
-									'SELECT * FROM Member',
+									"SELECT * FROM Member m join Photo p on m.member_id=p.member_id where p.primary_pic=1 and m.name!='Unknown'",
 									[],
 									function(tx, results) {
 										if (results != null
@@ -368,13 +453,19 @@ function getAllMembers() {
 												var dName = entry.name;
 												if (entry.nick != "")
 													dName = entry.nick;
+
 												$('#memberList')
 														.append(
 																'<li><a href="#profile" class="details" id="'
 																		+ entry.member_id
-																		+ '"><img src="img/pic.jpg" class="ul-li-icon" /> <h3>&nbsp;'
+																		+ '"><img src="'
+																		+ entry.img
+																		+ '" class="ul-li-has-thumb" id="pic_"'
+																		+ entry.member_id
+																		+ '"/> <h3>&nbsp;'
 																		+ dName
-																		+ '</h3></a>');
+																		+ '</h3></a></li>');
+
 											}
 											$('#memberList')
 													.listview('refresh');
@@ -412,6 +503,9 @@ function getProfile(memid) {
 						if (entry.nick != "")
 							dName = entry.nick;
 						// $("#prof-name").html("<h3>" + dName + "</h3>");
+						getPrimaryPic(entry.member_id, function(img) {
+							$("#prof-pic").attr("src", img);
+						});
 						$("#prof-name").html(dName);
 						$("#profName").html(entry.name);
 						$("#profNick").html(entry.nick);
@@ -424,7 +518,7 @@ function getProfile(memid) {
 						$("#profBdayTxt").val(entry.birthday);
 						$("#profPhoneTxt").val(entry.phone);
 						$("#profEmailTxt").val(entry.email);
-						
+
 						getPhotos(entry.member_id);
 					}
 
@@ -449,8 +543,8 @@ function searchMembers(txt) {
 		db
 				.transaction(function(tx) {
 					ensureMemberTableExists(tx);
-					var query = "SELECT * FROM Member where name like '%" + txt
-							+ "%' or nick like '%" + txt + "%'";
+					var query = "SELECT * FROM Member m join Photo p on m.member_id=p.member_id where p.primary_pic=1 and m.name like '%"
+							+ txt + "%' or m.nick like '%" + txt + "%'";
 					tx
 							.executeSql(
 									query,
@@ -468,9 +562,11 @@ function searchMembers(txt) {
 														.append(
 																'<li><a href="#profile" class="details" id="'
 																		+ entry.member_id
-																		+ '"><img src="img/pic.jpg" class="ul-li-icon" /> <h3>&nbsp;'
+																		+ '"><img src="'
+																		+ etnry.img
+																		+ '" class="ul-li-has-thumb" /> <h3>&nbsp;'
 																		+ dName
-																		+ '</h3></a>');
+																		+ '</h3></a></li>');
 											}
 											$('#memberList')
 													.listview('refresh');
@@ -554,23 +650,31 @@ function getTree() {
 				.transaction(function(tx) {
 					ensureNodeTableExists(tx);
 					ensureRootTableExists(tx);
-					var query = "SELECT * FROM Member m join Root r on m.member_id=r.member_id";
+					// var query = "SELECT * FROM Member m join Root r on
+					// m.member_id=r.member_id join Photo p on
+					// m.member_id=p.member_id where p.primary_pic=1";
+					var query = "SELECT * FROM Member m join Photo p on m.member_id=p.member_id where p.primary_pic=1 and m.member_id = (Select member_id from Root)";
 					tx.executeSql(query, [], function(tx, results) {
+						$(".tree-root").html("");
+						console.log(results.rows.length);
 						var member = new Object();
 						if (results != null && results.rows != null) {
-							if(results.rows.length > 0){
+							if (results.rows.length > 0) {
 								var entry = results.rows.item(0);
 								var dName = entry.name;
 								if (entry.nick != "")
 									dName = entry.nick;
+
 								html = '<li>{"id":"' + entry.member_id
 										+ '","node_id":"' + entry.member_id
+										+ '","img":"' + entry.img
 										+ '","name":"' + dName
 										+ '","parent":"0","type":"root"}</li>';
 								$(".tree-root").append(html);
+
 								getSpouse(entry.member_id, 1);
 								getChildren(entry.member_id, 1);
-							}							
+							}
 						}
 					}, function(error) {
 						console.log("Got error fetching Members " + error.code
@@ -589,10 +693,10 @@ function getSpouseID(id, sex, callBack) {
 				.transaction(function(tx) {
 					ensureRootTableExists(tx);
 					if (sex == 1)
-						var query = "select * from member where member_id=(select mother_node_id from node where father_node_id="
+						var query = "select * from member m join Photo p on m.member_id=p.member_id where p.primary_pic=1 and member_id=(select mother_node_id from node where father_node_id="
 								+ id + ")";
 					else
-						var query = "select * from member where member_id=(select father_node_id from node where mother_node_id="
+						var query = "select * from member m join Photo p on m.member_id=p.member_id where p.primary_pic=1 and member_id=(select father_node_id from node where mother_node_id="
 								+ id + ")";
 					tx.executeSql(query, [], function(tx, results) {
 						var data = new Object();
@@ -618,11 +722,12 @@ function getSpouseID(id, sex, callBack) {
 }
 
 function getParentsID(id, callBack) {
+	console.log("Getting Parents ID");
 	var db = window.openDatabase("Kinsfolk", "1.0", "Kinsfolk", 200000);
 	try {
 		db.transaction(function(tx) {
 			ensureRootTableExists(tx);
-			var query = "Select * from node where member_id="+id;
+			var query = "Select * from node n where n.member_id=" + id;
 			tx.executeSql(query, [], function(tx, results) {
 				var data = new Object();
 				if (results != null && results.rows != null) {
@@ -630,7 +735,10 @@ function getParentsID(id, callBack) {
 						var entry = results.rows.item(0);
 						data.father_id = entry.father_node_id;
 						data.mother_id = entry.mother_node_id;
-					} 
+					} else {
+						data.father_id = 0;
+						data.mother_id = 0;
+					}
 				}
 				callBack(data);
 			}, function(error) {
@@ -644,7 +752,7 @@ function getParentsID(id, callBack) {
 }
 
 function getSpouse(id, view, callBack) {
-	console.log("Getting Spouse of "+id);
+	console.log("Getting Spouse of " + id);
 	getGender(
 			id,
 			function(sex) {
@@ -655,10 +763,10 @@ function getSpouse(id, view, callBack) {
 							.transaction(function(tx) {
 								ensureRootTableExists(tx);
 								if (sex == 1)
-									var query = "select * from member where member_id=(select mother_node_id from node where father_node_id="
+									var query = "select * from member m join Photo p on m.member_id=p.member_id where p.primary_pic=1 and m.member_id=(select mother_node_id from node where father_node_id="
 											+ id + ")";
 								else
-									var query = "select * from member where member_id=(select father_node_id from node where mother_node_id="
+									var query = "select * from member m join Photo p on m.member_id=p.member_id where p.primary_pic=1 and m.member_id=(select father_node_id from node where mother_node_id="
 											+ id + ")";
 								tx
 										.executeSql(
@@ -674,15 +782,19 @@ function getSpouse(id, view, callBack) {
 															if (entry.nick != "")
 																dName = entry.nick;
 															if (view == 1) {
+
 																html = '<li>{"id":"'
 																		+ entry.member_id
 																		+ '","node_id":"'
 																		+ entry.member_id
+																		+ '","img":"'
+																		+ entry.img
 																		+ '","name":"'
 																		+ dName
 																		+ '","parent":"'
 																		+ id
 																		+ '","type":"spouse"}</li>';
+
 																$(".tree-root")
 																		.append(
 																				html);
@@ -691,18 +803,22 @@ function getSpouse(id, view, callBack) {
 																	relationship = "Wife";
 																else
 																	relationship = "Husband";
+
 																$('#familyList')
 																		.append(
 																				'<li><a href="#profile" class="details" id="'
 																						+ entry.member_id
-																						+ '"><!--<img src="" class="ul-li-icon" />--> <h3>&nbsp;'
+																						+ '"><img src="'
+																						+ entry.img
+																						+ '" class="ul-li-has-thumb" /> <h3>&nbsp;'
 																						+ dName
 																						+ '</h3><p>'
 																						+ relationship
-																						+ '</p></a>');
+																						+ '</p></a></li>');
 																$('#familyList')
 																		.listview(
 																				'refresh');
+
 															}
 
 														}
@@ -724,7 +840,7 @@ function getSpouse(id, view, callBack) {
 }
 
 function getChildren(id, view) {
-	console.log("Getting Children of "+id);
+	console.log("Getting Children of " + id);
 	getGender(
 			id,
 			function(sex) {
@@ -734,10 +850,10 @@ function getChildren(id, view) {
 					db
 							.transaction(function(tx) {
 								if (sex == 1)
-									var query = "SELECT * FROM Member m join Node n on m.member_id=n.member_id where n.father_node_id="
+									var query = "SELECT * FROM Member m join Photo p on p.member_id=m.member_id join Node n on m.member_id=n.member_id where p.primary_pic=1 and n.father_node_id="
 											+ id;
 								else
-									var query = "SELECT * FROM Member m join Node n on m.member_id=n.member_id where n.mother_node_id="
+									var query = "SELECT * FROM Member m join Photo p on p.member_id=m.member_id join Node n on m.member_id=n.member_id where p.primary_pic=1 and n.mother_node_id="
 											+ id;
 								tx
 										.executeSql(
@@ -753,10 +869,13 @@ function getChildren(id, view) {
 															if (entry.nick != "")
 																dName = entry.nick;
 															if (view == 1) {
+
 																html = '<li>{"id":"'
 																		+ entry.member_id
 																		+ '","node_id":"'
 																		+ entry.member_id
+																		+ '","img":"'
+																		+ entry.img
 																		+ '","name":"'
 																		+ dName
 																		+ '","parent":"'
@@ -765,22 +884,31 @@ function getChildren(id, view) {
 																$(".tree-root")
 																		.append(
 																				html);
-																getSpouse(entry.member_id,1);
-																getChildren(entry.member_id,1);
+
+																getSpouse(
+																		entry.member_id,
+																		1);
+																getChildren(
+																		entry.member_id,
+																		1);
 															} else {
 																if (entry.gender == 1)
 																	relationship = "Son";
 																else
 																	relationship = "Daughter";
+
 																$('#familyList')
 																		.append(
 																				'<li><a href="#profile" class="details" id="'
 																						+ entry.member_id
-																						+ '"><!--<img src="" class="ul-li-icon" />--> <h3>&nbsp;'
+																						+ '"><img src="'
+																						+ entry.img
+																						+ '" class="ul-li-has-thumb" /> <h3>&nbsp;'
 																						+ dName
 																						+ '</h3><p>'
 																						+ relationship
-																						+ '</p></a>');
+																						+ '</p></a></li>');
+
 															}
 
 														}
@@ -814,9 +942,9 @@ function getFamily(id) {
 		db
 				.transaction(function(tx) {
 					ensureNodeTableExists(tx);
-					var query = "select * from (select * from member m join node n on n.member_id=m.member_id where m.member_id=(select father_node_id from node where member_id="
+					var query = "select * from (select * from member m join Photo p on p.member_id=m.member_id join node n on n.member_id=m.member_id where p.primary_pic=1 and m.member_id=(select father_node_id from node where member_id="
 							+ id
-							+ ")) union select * from member m join node n on n.member_id=m.member_id where m.member_id=(select mother_node_id from node where member_id="
+							+ ")) union select * from member m join Photo p on p.member_id=m.member_id join node n on n.member_id=m.member_id where p.primary_pic=1 and m.member_id=(select mother_node_id from node where member_id="
 							+ id + ")";
 					console.log(query);
 					tx
@@ -836,18 +964,22 @@ function getFamily(id) {
 													relationship = "Father";
 												else
 													relationship = "Mother";
-												if(dName != "Unknown"){
+												if (dName != "Unknown") {
+
 													$('#familyList')
-													.append(
-															'<li><a href="#profile" class="details" id="'
-																	+ entry.member_id
-																	+ '"><img src="img/pic.jpg" class="ul-li-icon" /> <h3>&nbsp;'
-																	+ dName
-																	+ '</h3><p>'
-																	+ relationship
-																	+ '</p></a>');
+															.append(
+																	'<li><a href="#profile" class="details" id="'
+																			+ entry.member_id
+																			+ '"><img src="'
+																			+ entry.img
+																			+ '" class="ul-li-has-thumb" /> <h3>&nbsp;'
+																			+ dName
+																			+ '</h3><p>'
+																			+ relationship
+																			+ '</p></a></li>');
+
 												}
-												
+
 											}
 											$('#familyList')
 													.listview('refresh');
@@ -891,11 +1023,12 @@ function getGender(id, callBack) {
 	}
 }
 
-function savePhoto(id,photo){
+function savePhoto(id, photo) {
 	var db = window.openDatabase("Kinsfolk", "1.0", "Kinsfolk", 200000);
 	db.transaction(function(tx) {
 		ensurePhotoTableExists(tx);
-		var insertStmt = "insert into Photo(member_id,img,primary_pic) values("+id+",'"+photo+"',0)";
+		var insertStmt = "insert into Photo(member_id,img,primary_pic) values("
+				+ id + ",'" + photo + "',0)";
 		// console.log(insertStmt);
 		tx.executeSql(insertStmt, [], function(tx, results) {
 		});
@@ -907,20 +1040,141 @@ function savePhoto(id,photo){
 	});
 }
 
-function getPhotos(id){
+function getPhotos(id) {
+	var db = window.openDatabase("Kinsfolk", "1.0", "Kinsfolk", 200000);
+	try {
+		db
+				.transaction(function(tx) {
+					ensurePhotoTableExists(tx);
+					var query = "SELECT id,img FROM Photo where img!='img/pic.jpg' and member_id="
+							+ id;
+					tx
+							.executeSql(
+									query,
+									[],
+									function(tx, results) {
+										$(".gallery-thumbs").html("");
+										var member = new Object();
+										if (results != null
+												&& results.rows != null) {
+											for ( var index = 0; index < results.rows.length; index++) {
+												var entry = results.rows
+														.item(index);
+												$(".gallery-thumbs")
+														.append(
+																"<li><a class='img-thumb' href='#gallery-popup' data-rel='popup' img-id='"
+																		+ entry.id
+																		+ "' img-src='"
+																		+ entry.img
+																		+ "'><img src='"
+																		+ entry.img
+																		+ "' width=75 height=75></a></li>");
+											}
+										}
+									},
+									function(error) {
+										console
+												.log("Got error fetching Gender "
+														+ error.code
+														+ " "
+														+ error.message);
+									});
+				});
+	} catch (err) {
+		console.log("Got error while reading Members " + err);
+	}
+}
+
+function savePrimary(memid, picid) {
+	var db = window.openDatabase("Kinsfolk", "1.0", "Kinsfolk", 200000);
+	db.transaction(function(tx) {
+		ensurePhotoTableExists(tx);
+		var insertStmt = "update Photo set primary_pic=1 where id=" + picid;
+		console.log(insertStmt);
+		tx.executeSql(insertStmt, [], function(tx, results) {
+		});
+
+	}, function(error) {
+		console.log("Data insert failed " + error.code + " " + error.message);
+	}, function() {
+		console.log("Data insert successful");
+	});
+}
+
+function saveDefaultPhoto(id) {
+	var db = window.openDatabase("Kinsfolk", "1.0", "Kinsfolk", 200000);
+	db.transaction(function(tx) {
+		ensurePhotoTableExists(tx);
+		var insertStmt = "insert into Photo(member_id,img,primary_pic) values("
+				+ id + ",'img/pic.jpg',1)";
+		// console.log(insertStmt);
+		tx.executeSql(insertStmt, [], function(tx, results) {
+		});
+
+	}, function(error) {
+		console.log("Data insert failed " + error.code + " " + error.message);
+	}, function() {
+		console.log("Data insert successful");
+	});
+}
+
+function unsetPrimary(memid) {
+	var db = window.openDatabase("Kinsfolk", "1.0", "Kinsfolk", 200000);
+	db.transaction(function(tx) {
+		ensurePhotoTableExists(tx);
+		var insertStmt = "update Photo set primary_pic=0 where member_id="
+				+ memid;
+		// console.log(insertStmt);
+		tx.executeSql(insertStmt, [], function(tx, results) {
+		});
+
+	}, function(error) {
+		console.log("Data update failed " + error.code + " " + error.message);
+	}, function() {
+		console.log("Data update successful");
+	});
+}
+
+function getPrimaryPic(id, callback) {
+	var db = window.openDatabase("Kinsfolk", "1.0", "Kinsfolk", 200000);
+	try {
+		db
+				.transaction(function(tx) {
+					ensurePhotoTableExists(tx);
+					var query = "SELECT img FROM Photo where primary_pic=1 and member_id="
+							+ id;
+					tx.executeSql(query, [], function(tx, results) {
+
+						if (results != null && results.rows != null) {
+							if (results.rows.length > 0) {
+								var entry = results.rows.item(0);
+								callback(entry.img);
+							} else {
+								callback("img/pic.jpg");
+							}
+						}
+					}, function(error) {
+						console.log("Got error fetching Gender " + error.code
+								+ " " + error.message);
+					});
+				});
+	} catch (err) {
+		console.log("Got error while reading Members " + err);
+	}
+}
+
+function getMemberData(id, callback) {
 	var db = window.openDatabase("Kinsfolk", "1.0", "Kinsfolk", 200000);
 	try {
 		db.transaction(function(tx) {
 			ensurePhotoTableExists(tx);
-			var query = "SELECT img FROM Photo where member_id=" + id;
+			var query = "SELECT * FROM Member where member_id=" + id;
 			tx.executeSql(query, [], function(tx, results) {
-				$(".gallery-thumbs").html("");
-				var member = new Object();
+
 				if (results != null && results.rows != null) {
-					for ( var index = 0; index < results.rows.length; index++) {
+					if (results.rows.length > 0) {
 						var entry = results.rows.item(0);
-						$(".gallery-thumbs")
-						.append("<li><img src="+entry.img+" width=75 height=75></li>");
+						callback(entry);
 					}
 				}
 			}, function(error) {
